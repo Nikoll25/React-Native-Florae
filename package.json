@@ -3,17 +3,33 @@
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
+    "@expo-google-fonts/courgette": "^0.4.1",
+    "@expo-google-fonts/manrope": "^0.4.2",
+    "@expo-google-fonts/outfit": "^0.4.3",
+    "@expo-google-fonts/poppins": "^0.4.1",
+    "@expo/metro-runtime": "~56.0.21",
     "@expo/vector-icons": "^15.0.2",
-    "expo": "~56.0.15",
+    "@react-navigation/drawer": "^7.13.9",
+    "expo": "~56.0.21",
+    "expo-calendar": "~56.0.10",
     "expo-constants": "~56.0.19",
-    "expo-linking": "~56.0.15",
-    "expo-router": "~56.2.14",
+    "expo-file-system": "~56.0.10",
+    "expo-font": "~56.0.7",
+    "expo-image-picker": "~56.0.25",
+    "expo-linking": "~56.0.17",
+    "expo-router": "~56.2.20",
     "expo-status-bar": "~56.0.4",
+    "formik": "^2.4.9",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3",
+    "react-dom": "19.2.3",
     "react-native": "0.85.3",
+    "react-native-calendars": "^1.1314.0",
+    "react-native-gesture-handler": "~2.31.1",
+    "react-native-reanimated": "4.3.1",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "4.25.2"
+    "react-native-screens": "~4.26.0",
+    "react-native-web": "^0.21.2",
+    "yup": "^1.7.1"
   },
   "scripts": {
     "start": "expo start",
@@ -21,5 +37,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "typescript": "~6.0.3"
+  }
 }

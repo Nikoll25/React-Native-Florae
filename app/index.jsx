@@ -13,7 +13,7 @@ export default function Index() {
 
     if (isAuthenticated) {
 
-      router.replace("/(tabs)/explorar");
+      router.replace("/(tabs)/explore");
 
     } else {
 
