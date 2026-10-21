@@ -28,13 +28,9 @@ import { Feather } from '@expo/vector-icons';
 
 const validationSchema = Yup.object().shape({
 
-    username: Yup.string()
-        .min(3, 'El usuario debe tener al menos 3 caracteres')
-        .required('El usuario es obligatorio'),
+    username: Yup.string() .required('El usuario es obligatorio'),
 
-    password: Yup.string()
-        .min(6, 'La contraseña debe tener al menos 6 caracteres')
-        .required('La contraseña es obligatoria'),
+    password: Yup.string().required('La contraseña es obligatoria'),
 
 });
 

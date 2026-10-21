@@ -100,28 +100,28 @@ const FICHAS_DETALLE = {
         apodo: "Flor de mayo",
         salud: "Saludable",
         proximoRiego: "En 2 días",
-       cuidados: [
-    {
-        imagen: require("../../../assets/solamarillo.png"),
-        label: "Luz",
-        valor: "Indirecta",
-    },
-    {
-        imagen: require("../../../assets/riegoazul.png"),
-        label: "Riego",
-        valor: "Cada 7 días",
-    },
-    {
-        imagen: require("../../../assets/fertilizacionverde.png"),
-        label: "Fertilización",
-        valor: "Cada 15 días",
-    },
-    {
-        imagen: require("../../../assets/temperatura2.png"),
-        label: "Temperatura",
-        valor: "15°C - 29°C",
-    },
-],
+        cuidados: [
+            {
+                imagen: require("../../../assets/solamarillo.png"),
+                label: "Luz",
+                valor: "Indirecta",
+            },
+            {
+                imagen: require("../../../assets/riegoazul.png"),
+                label: "Riego",
+                valor: "Cada 7 días",
+            },
+            {
+                imagen: require("../../../assets/fertilizacionverde.png"),
+                label: "Fertilización",
+                valor: "Cada 15 días",
+            },
+            {
+                imagen: require("../../../assets/temperatura2.png"),
+                label: "Temperatura",
+                valor: "15°C - 29°C",
+            },
+        ],
         actividad: [
             { fecha: "15 oct", desc: "Riego exitoso" },
             { fecha: "6 nov", desc: "Fertilización aplicada" },
@@ -207,17 +207,13 @@ export default function Jardin() {
     const router = useRouter();
 
     const [seccion, setSeccion] = useState("todas");
-    const [busqueda, setBusqueda] = useState("");
+    const [busqueda, ] = useState("");
 
     // Modal de eliminar (igual que antes)
     const [modalVisible, setModalVisible] = useState(false);
     const [plantaAEliminar, setPlantaAEliminar] = useState(null);
 
-    // Modal de detalle "Ver más" (nuevo, sin navegación)
     const [plantaDetalle, setPlantaDetalle] = useState(null);
-    const [mostrarActividad, setMostrarActividad] = useState(false);
-    const [plagaSeleccionada, setPlagaSeleccionada] = useState(null);
-    const [tratamientoSeleccionado, setTratamientoSeleccionado] = useState(null);
 
     const plantasMostrar = plantasIniciales.filter((planta) => {
         const coincideCategoria =
@@ -229,18 +225,6 @@ export default function Jardin() {
 
         return coincideCategoria && coincideBusqueda;
     });
-
-    const abrirDetalle = (planta) => {
-        const ficha = FICHAS_DETALLE[planta.id] || FICHA_GENERICA;
-        setPlantaDetalle({ ...planta, ...ficha });
-        setMostrarActividad(false);
-    };
-
-    const cerrarDetalle = () => {
-        setPlantaDetalle(null);
-        setPlagaSeleccionada(null);
-        setTratamientoSeleccionado(null);
-    };
 
     const abrirModalEliminar = (planta) => {
         setPlantaAEliminar(planta);
@@ -319,7 +303,6 @@ export default function Jardin() {
                         {/* BUSCADOR */}
 
                         <View style={styles.searchContainer}>
-
                             <Ionicons
                                 name="search-outline"
                                 size={22}
@@ -327,13 +310,10 @@ export default function Jardin() {
                             />
 
                             <TextInput
-                                value={busqueda}
-                                onChangeText={setBusqueda}
                                 placeholder="Buscar en mi jardín..."
                                 placeholderTextColor="#999"
                                 style={styles.input}
                             />
-
                         </View>
 
                         {/* FILTROS */}
@@ -451,7 +431,10 @@ export default function Jardin() {
                                     <TouchableOpacity
                                         style={styles.verMasButton}
                                         onPress={() =>
-                                            abrirDetalle(item)
+                                            router.push({
+                                                pathname: "/jardin/detallePlanta",
+                                                params: { id: item.id },
+                                            })
                                         }
                                     >
                                         <Text style={styles.verMasText}>
@@ -591,445 +574,6 @@ export default function Jardin() {
                     </View>
 
                 </View>
-            </Modal>
-
-            {/* MODAL: DETALLE DE PLANTA ("Ver más", sin navegación) */}
-
-            <Modal
-                visible={!!plantaDetalle}
-                animationType="slide"
-                onRequestClose={cerrarDetalle}
-            >
-                <SafeAreaView style={styles.container} edges={["top"]}>
-                    {plantaDetalle && (
-                        <ScrollView
-                            showsVerticalScrollIndicator={false}
-                            contentContainerStyle={styles.detalleScroll}
-                        >
-                            {/* Cabecera del detalle */}
-
-                            <View style={styles.detalleHeader}>
-                                <TouchableOpacity
-                                    style={styles.backButton}
-                                    onPress={cerrarDetalle}
-                                >
-                                    <Ionicons name="chevron-back" size={22} color="#29432A" />
-                                </TouchableOpacity>
-
-                                <View>
-                                    <Text style={styles.eyebrow}>
-                                        {plantaDetalle.tipo}
-                                    </Text>
-                                    <Text style={styles.detalleTitulo} numberOfLines={1}>
-                                        {plantaDetalle.nombre}
-                                    </Text>
-                                </View>
-                            </View>
-
-                            {/* Foto + salud */}
-
-                            <View style={styles.detalleHero}>
-                                <Image
-                                    source={plantaDetalle.imagen}
-                                    style={styles.detalleHeroImg}
-                                    resizeMode="cover"
-                                />
-
-                                <View
-                                    style={[
-                                        styles.gauge,
-                                        { borderColor: estadoSalud.color },
-                                    ]}
-                                >
-                                    <View
-                                        style={[
-                                            styles.gaugeIconWrap,
-                                            { backgroundColor: estadoSalud.fondo },
-                                        ]}
-                                    >
-                                        <Ionicons
-                                            name={estadoSalud.icono}
-                                            size={16}
-                                            color={estadoSalud.color}
-                                        />
-                                    </View>
-                                    <View style={styles.gaugeTextWrap}>
-                                        <Text
-                                            style={[styles.gaugeStatus, { color: estadoSalud.color }]}
-                                            numberOfLines={1}
-                                        >
-                                            {estadoSalud.etiqueta}
-                                        </Text>
-                                    </View>
-                                </View>
-
-                                {!!plantaDetalle.apodo && (
-                                    <View style={styles.heroCaption}>
-                                        <Text style={styles.heroCaptionText}>
-                                            “{plantaDetalle.apodo}”
-                                        </Text>
-                                    </View>
-                                )}
-                            </View>
-
-                            {/* Guía de cuidados */}
-
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>
-                                    Guía de cuidados específicos
-                                </Text>
-
-                                <ScrollView
-                                    horizontal
-                                    showsHorizontalScrollIndicator={false}
-                                    contentContainerStyle={styles.cuidadosContainer}
-                                >
-                                    {plantaDetalle.cuidados.map((c, i) => (
-                                        <View key={i} style={styles.cuidadoCard}>
-
-                                            <Image
-                                                source={c.imagen}
-                                                style={styles.cuidadoImagen}
-                                                resizeMode="contain"
-                                            />
-
-                                            <Text style={styles.cuidadoLabel}>
-                                                {c.label}
-                                            </Text>
-
-                                            <Text style={styles.cuidadoValor}>
-                                                {c.valor}
-                                            </Text>
-
-                                        </View>
-                                    ))}
-                                </ScrollView>
-                            </View>
-
-                            {/* Actividad */}
-
-                            <View style={styles.section}>
-                                <View style={styles.activityCard}>
-                                    <View style={styles.activityTop}>
-                                        <View style={styles.activityLeft}>
-                                            <View style={styles.dropCircle}>
-                                                <Ionicons name="water-outline" size={16} color="#BFE0C1" />
-                                            </View>
-                                            <View>
-                                                <Text style={styles.activityLabel}>Próximo riego</Text>
-                                                <Text style={styles.activityValue}>
-                                                    {plantaDetalle.proximoRiego}
-                                                </Text>
-                                            </View>
-                                        </View>
-
-                                        <TouchableOpacity
-                                            style={styles.activityToggle}
-                                            onPress={() => setMostrarActividad(!mostrarActividad)}
-                                        >
-                                            <Text style={styles.activityToggleText}>Actividad</Text>
-                                            <Ionicons
-                                                name={mostrarActividad ? "chevron-up" : "chevron-down"}
-                                                size={14}
-                                                color="#C4D2BC"
-                                            />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {mostrarActividad && (
-                                        <View style={styles.activityLog}>
-                                            {plantaDetalle.actividad.length === 0 ? (
-                                                <Text style={styles.activityEmpty}>
-                                                    Aún no hay registros.
-                                                </Text>
-                                            ) : (
-                                                plantaDetalle.actividad.map((a, i) => (
-                                                    <View key={i} style={styles.activityRow}>
-                                                        <Text style={styles.activityDate}>{a.fecha}</Text>
-                                                        <Text style={styles.activityDesc}>{a.desc}</Text>
-                                                    </View>
-                                                ))
-                                            )}
-                                        </View>
-                                    )}
-                                </View>
-                            </View>
-
-                            {/* Plagas */}
-
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Plagas</Text>
-
-                                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                                    {plantaDetalle.plagas.map((plaga) => (
-                                        <TouchableOpacity
-                                            key={plaga.id}
-                                            style={styles.pestCard}
-                                            activeOpacity={0.8}
-                                            onPress={() => setPlagaSeleccionada(plaga)}
-                                        >
-                                            <Image
-                                                source={plaga.imagen}
-                                                style={styles.pestImg}
-                                                resizeMode="cover"
-                                            />
-                                            <View style={styles.pestBody}>
-                                                <Text style={styles.pestName} numberOfLines={1}>
-                                                    {plaga.nombre}
-                                                </Text>
-                                                <View
-                                                    style={[
-                                                        styles.pill,
-                                                        plaga.estado === "Activa"
-                                                            ? styles.pillActive
-                                                            : styles.pillDone,
-                                                    ]}
-                                                >
-                                                    <Text
-                                                        style={[
-                                                            styles.pillText,
-                                                            plaga.estado === "Activa"
-                                                                ? styles.pillTextActive
-                                                                : styles.pillTextDone,
-                                                        ]}
-                                                    >
-                                                        {plaga.estado}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        </TouchableOpacity>
-                                    ))}
-
-                                    <TouchableOpacity
-                                        style={styles.addCard}
-                                        activeOpacity={0.7}
-                                        onPress={() => {
-                                            cerrarDetalle();
-                                            router.push("/explore");
-                                        }}
-                                    >
-                                        <View style={styles.plusCircle}>
-                                            <Ionicons name="add" size={18} color="#5F8A58" />
-                                        </View>
-                                        <Text style={styles.addCardText}>Agregar plaga</Text>
-                                    </TouchableOpacity>
-                                </ScrollView>
-                            </View>
-
-                            {/* Tratamientos */}
-
-                            <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Tratamientos</Text>
-
-                                <View style={{ gap: 8 }}>
-                                    {plantaDetalle.tratamientos.map((tx) => (
-                                        <TouchableOpacity
-                                            key={tx.id}
-                                            style={styles.txRow}
-                                            activeOpacity={0.8}
-                                            onPress={() => setTratamientoSeleccionado(tx)}
-                                        >
-                                            <View
-                                                style={[
-                                                    styles.txIcon,
-                                                    tx.estado === "Finalizado" && styles.txIconDone,
-                                                ]}
-                                            >
-                                                <Ionicons
-                                                    name={
-                                                        tx.estado === "Finalizado"
-                                                            ? "checkmark"
-                                                            : "flask-outline"
-                                                    }
-                                                    size={17}
-                                                    color={
-                                                        tx.estado === "Finalizado"
-                                                            ? "#7A8B74"
-                                                            : "#5F8A58"
-                                                    }
-                                                />
-                                            </View>
-
-                                            <View style={styles.txInfo}>
-                                                <Text style={styles.txName}>{tx.nombre}</Text>
-                                                <Text style={styles.txFor}>Para {tx.para}</Text>
-                                            </View>
-
-                                            <View
-                                                style={[
-                                                    styles.pill,
-                                                    tx.estado === "Activo"
-                                                        ? styles.pillActive
-                                                        : styles.pillFinished,
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.pillText,
-                                                        tx.estado === "Activo"
-                                                            ? styles.pillTextActive
-                                                            : styles.pillTextFinished,
-                                                    ]}
-                                                >
-                                                    {tx.estado}
-                                                </Text>
-                                            </View>
-                                        </TouchableOpacity>
-                                    ))}
-
-                                    <TouchableOpacity style={styles.addRow} activeOpacity={0.7}>
-                                        <View style={styles.plusCircle}>
-                                            <Ionicons name="add" size={18} color="#5F8A58" />
-                                        </View>
-                                        <Text style={styles.addRowText}>Agregar tratamiento</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                        </ScrollView>
-                    )}
-                </SafeAreaView>
-
-                {/* SUBMODAL: DETALLE DE PLAGA */}
-
-                <Modal
-                    visible={!!plagaSeleccionada}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setPlagaSeleccionada(null)}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalCard2}>
-                            {plagaSeleccionada && (
-                                <>
-                                    <Image
-                                        source={plagaSeleccionada.imagen}
-                                        style={styles.modalImg}
-                                        resizeMode="cover"
-                                    />
-
-                                    <View style={styles.modalBody}>
-                                        <View style={styles.modalHeadRow}>
-                                            <Text style={styles.modalTitle2}>
-                                                {plagaSeleccionada.nombre}
-                                            </Text>
-                                            <View
-                                                style={[
-                                                    styles.pill,
-                                                    plagaSeleccionada.estado === "Activa"
-                                                        ? styles.pillActive
-                                                        : styles.pillDone,
-                                                ]}
-                                            >
-                                                <Text
-                                                    style={[
-                                                        styles.pillText,
-                                                        plagaSeleccionada.estado === "Activa"
-                                                            ? styles.pillTextActive
-                                                            : styles.pillTextDone,
-                                                    ]}
-                                                >
-                                                    {plagaSeleccionada.estado}
-                                                </Text>
-                                            </View>
-                                        </View>
-
-                                        <Text style={styles.modalDesc}>
-                                            {plagaSeleccionada.descripcion}
-                                        </Text>
-
-                                        <View style={styles.modalMetaRow}>
-                                            <Text style={styles.modalMetaLabel}>Detectada</Text>
-                                            <Text style={styles.modalMetaValue}>
-                                                {plagaSeleccionada.detectada}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.modalMetaRow}>
-                                            <Text style={styles.modalMetaLabel}>Zona afectada</Text>
-                                            <Text style={styles.modalMetaValue}>
-                                                {plagaSeleccionada.zona}
-                                            </Text>
-                                        </View>
-
-                                        <TouchableOpacity
-                                            style={styles.modalCloseButton}
-                                            onPress={() => setPlagaSeleccionada(null)}
-                                        >
-                                            <Text style={styles.modalCloseText}>Cerrar</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </>
-                            )}
-                        </View>
-                    </View>
-                </Modal>
-
-                {/* SUBMODAL: DETALLE DE TRATAMIENTO */}
-
-                <Modal
-                    visible={!!tratamientoSeleccionado}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setTratamientoSeleccionado(null)}
-                >
-                    <View style={styles.modalOverlay}>
-                        <View style={styles.modalCard2}>
-                            {tratamientoSeleccionado && (
-                                <View style={[styles.modalBody, { paddingTop: 24 }]}>
-                                    <View style={styles.modalHeadRow}>
-                                        <Text style={styles.modalTitle2}>
-                                            {tratamientoSeleccionado.nombre}
-                                        </Text>
-                                        <View
-                                            style={[
-                                                styles.pill,
-                                                tratamientoSeleccionado.estado === "Activo"
-                                                    ? styles.pillActive
-                                                    : styles.pillFinished,
-                                            ]}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.pillText,
-                                                    tratamientoSeleccionado.estado === "Activo"
-                                                        ? styles.pillTextActive
-                                                        : styles.pillTextFinished,
-                                                ]}
-                                            >
-                                                {tratamientoSeleccionado.estado}
-                                            </Text>
-                                        </View>
-                                    </View>
-
-                                    <Text style={styles.modalDesc}>
-                                        {tratamientoSeleccionado.notas}
-                                    </Text>
-
-                                    <View style={styles.modalMetaRow}>
-                                        <Text style={styles.modalMetaLabel}>Para</Text>
-                                        <Text style={styles.modalMetaValue}>
-                                            {tratamientoSeleccionado.para}
-                                        </Text>
-                                    </View>
-                                    <View style={styles.modalMetaRow}>
-                                        <Text style={styles.modalMetaLabel}>Frecuencia</Text>
-                                        <Text style={styles.modalMetaValue}>
-                                            {tratamientoSeleccionado.frecuencia}
-                                        </Text>
-                                    </View>
-
-                                    <TouchableOpacity
-                                        style={styles.modalCloseButton}
-                                        onPress={() => setTratamientoSeleccionado(null)}
-                                    >
-                                        <Text style={styles.modalCloseText}>Cerrar</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-                        </View>
-                    </View>
-                </Modal>
-
             </Modal>
 
         </SafeAreaView>
@@ -1498,49 +1042,49 @@ const styles = StyleSheet.create({
     },
 
     cuidadosContainer: {
-    paddingRight: 1,
-},
-
-cuidadoCard: {
-    width: 85,
-    height: 93,
-    backgroundColor: "#FFFFFF",
-    borderRadius: 2,
-    marginRight: 13,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    alignItems: "center",
-
-    elevation: 2,
-
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    shadowOffset: {
-        width: 0,
-        height: 2,
+        paddingRight: 1,
     },
-},
 
-cuidadoImagen: {
-    width: 33,
-    height: 33,
-    marginBottom: 8,
-},
+    cuidadoCard: {
+        width: 85,
+        height: 93,
+        backgroundColor: "#FFFFFF",
+        borderRadius: 2,
+        marginRight: 13,
+        paddingVertical: 14,
+        paddingHorizontal: 10,
+        alignItems: "center",
 
-cuidadoLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#111111",
-    textAlign: "center",
-},
+        elevation: 2,
 
-cuidadoValor: {
-    fontSize: 11,
-    color: "#777777",
-    marginTop: 2,
-    textAlign: "center",
-},
+        shadowColor: "#000",
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+    },
+
+    cuidadoImagen: {
+        width: 33,
+        height: 33,
+        marginBottom: 8,
+    },
+
+    cuidadoLabel: {
+        fontSize: 12,
+        fontWeight: "600",
+        color: "#111111",
+        textAlign: "center",
+    },
+
+    cuidadoValor: {
+        fontSize: 11,
+        color: "#777777",
+        marginTop: 2,
+        textAlign: "center",
+    },
 
     activityCard: {
         backgroundColor: "#5b7d5c",

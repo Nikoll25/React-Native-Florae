@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 const plantas = [
     {
@@ -59,6 +60,7 @@ const plagas = [
 ];
 
 export default function Explore() {
+    const router = useRouter();
     const [seccion, setSeccion] = useState("plantas");
     return (
         <SafeAreaView style={styles.container}>
@@ -168,8 +170,25 @@ export default function Explore() {
                         </View>
                     </>
                 }
+
                 renderItem={({ item }) => (
-                    <TouchableOpacity style={styles.card}>
+                    <TouchableOpacity
+                        style={styles.card}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                            if (seccion === "plantas") {
+                                router.push({
+                                    pathname: "/plantas/planta",
+                                    params: { id: item.id },
+                                });
+                            } else {
+                                router.push({
+                                    pathname: "/plagas/plaga",
+                                    params: { id: item.id },
+                                });
+                            }
+                        }}
+                    >
                         <Image
                             source={item.imagen}
                             style={styles.cardImage}
@@ -186,6 +205,7 @@ export default function Explore() {
                         </View>
                     </TouchableOpacity>
                 )}
+
             />
         </SafeAreaView>
     );
@@ -198,96 +218,97 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         paddingHorizontal: 18
     },
-   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingTop: 5,
-    paddingBottom: 10,
-    backgroundColor: "#F8F7F3",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E7EEE4",
-    shadowColor: "#000",
-    shadowOffset: {
-        width: 0,
-        height: 2,
+    header: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingTop: 5,
+        paddingBottom: 10,
+        backgroundColor: "#F8F7F3",
+        borderBottomWidth: 1,
+        borderBottomColor: "#E7EEE4",
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+        elevation: 2,
     },
-    shadowOpacity: 0.04,
-    shadowRadius: 6,
-    elevation: 2,
-},
 
-leftHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-},
 
-logoWrapper: {
-    width: 62,
-    height: 62,
-    justifyContent: "center",
-    alignItems: "center",
-},
-
-logo: {
-    width: 110,
-    height: 110,
-},
-
-textContainer: {
-    marginLeft: 12,
-},
-
-logoText: {
-    fontSize: 27,
-    fontWeight: "600",
-    color: "#4B6D46",
-    letterSpacing: 0.6,
-},
-
-logoSubtitle: {
-    fontSize: 13,
-    color: "#7F8D79",
-    marginTop: 2,
-},
-
-notification: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-
-    backgroundColor: "#FFFFFF",
-
-    justifyContent: "center",
-    alignItems: "center",
-
-    borderWidth: 1,
-    borderColor: "#E7EEE4",
-
-    shadowColor: "#000",
-    shadowOffset: {
-        width: 0,
-        height: 2,
+    leftHeader: {
+        flexDirection: "row",
+        alignItems: "center",
     },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-},
 
-notificationDot: {
-    position: "absolute",
-    top: 12,
-    right: 12,
+    logoWrapper: {
+        width: 62,
+        height: 62,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 
-    width: 9,
-    height: 9,
-    borderRadius: 4.5,
+    logo: {
+        width: 110,
+        height: 110,
+    },
 
-    backgroundColor: "#7BC45A",
+    textContainer: {
+        marginLeft: 12,
+    },
 
-    borderWidth: 2,
-    borderColor: "#FFFFFF",
-},
+    logoText: {
+        fontSize: 27,
+        fontWeight: "600",
+        color: "#4B6D46",
+        letterSpacing: 0.6,
+    },
+
+    logoSubtitle: {
+        fontSize: 13,
+        color: "#7F8D79",
+        marginTop: 2,
+    },
+
+    notification: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+
+        backgroundColor: "#FFFFFF",
+
+        justifyContent: "center",
+        alignItems: "center",
+
+        borderWidth: 1,
+        borderColor: "#E7EEE4",
+
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
+    },
+
+    notificationDot: {
+        position: "absolute",
+        top: 12,
+        right: 12,
+
+        width: 9,
+        height: 9,
+        borderRadius: 4.5,
+
+        backgroundColor: "#7BC45A",
+
+        borderWidth: 2,
+        borderColor: "#FFFFFF",
+    },
     title: {
         fontSize: 30,
         fontWeight: "700",
@@ -312,7 +333,7 @@ notificationDot: {
         flex: 1,
         marginLeft: 10,
         fontSize: 16,
-        color:"#7F8D79",
+        color: "#7F8D79",
     },
 
     categories: {
@@ -321,8 +342,9 @@ notificationDot: {
         marginBottom: 15,
     },
     btnPlantas: {
-        width: "48%",
+        width: "45%",
         backgroundColor: "#EEF3E7",
+        marginLeft: 10,
         height: 55,
         borderRadius: 15,
         justifyContent: "center",
@@ -333,8 +355,9 @@ notificationDot: {
     },
 
     btnPlagas: {
-        width: "48%",
+        width: "45%",
         backgroundColor: "#F8ECEA",
+        marginRight: 10,
         height: 55,
         borderRadius: 15,
         justifyContent: "center",
@@ -342,6 +365,18 @@ notificationDot: {
         flexDirection: "row",
         borderWidth: 2,
         borderColor: "transparent",
+    },
+
+    btnActivoAzul: {
+        borderColor: "#2E5E8B",
+        backgroundColor: "#D3E4F3",
+    },
+
+    textAprende: {
+        marginLeft: 6,
+        color: "#2E5E8B",
+        fontSize: 15,
+        fontWeight: "600",
     },
 
     /* Botón activo de Plantas */
@@ -379,6 +414,14 @@ notificationDot: {
         backgroundColor: "#FFFFFF",
         borderRadius: 10,
         marginBottom: 18,
+        shadowColor: "#808080",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.20,
+        shadowRadius: 6,
+        elevation: 4,
         overflow: "hidden",
         elevation: 4,
     },

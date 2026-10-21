@@ -1,1115 +1,316 @@
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
     View,
     Text,
     Image,
     ScrollView,
     TouchableOpacity,
-    Modal,
+    Alert,
     StyleSheet,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { Calendar, LocaleConfig } from "react-native-calendars";
 
-import {
-    Calendar,
-    LocaleConfig,
-} from "react-native-calendars";
-
-
-// ===============================================================
-// CONFIGURACIÓN DEL CALENDARIO EN ESPAÑOL
-// ===============================================================
-
-LocaleConfig.locales["es"] = {
+// Configurar el calendario en español
+LocaleConfig.locales.es = {
     monthNames: [
-        "Enero",
-        "Febrero",
-        "Marzo",
-        "Abril",
-        "Mayo",
-        "Junio",
-        "Julio",
-        "Agosto",
-        "Septiembre",
-        "Octubre",
-        "Noviembre",
-        "Diciembre",
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     ],
-
     monthNamesShort: [
-        "Ene.",
-        "Feb.",
-        "Mar.",
-        "Abr.",
-        "May.",
-        "Jun.",
-        "Jul.",
-        "Ago.",
-        "Sep.",
-        "Oct.",
-        "Nov.",
-        "Dic.",
+        "Ene.", "Feb.", "Mar.", "Abr.", "May.", "Jun.",
+        "Jul.", "Ago.", "Sep.", "Oct.", "Nov.", "Dic."
     ],
-
     dayNames: [
-        "Domingo",
-        "Lunes",
-        "Martes",
-        "Miércoles",
-        "Jueves",
-        "Viernes",
-        "Sábado",
+        "Domingo", "Lunes", "Martes", "Miércoles",
+        "Jueves", "Viernes", "Sábado"
     ],
-
-    dayNamesShort: [
-        "Dom.",
-        "Lun.",
-        "Mar.",
-        "Mié.",
-        "Jue.",
-        "Vie.",
-        "Sáb.",
-    ],
-
-    today: "Hoy",
+    dayNamesShort: ["Dom.", "Lun.", "Mar.", "Mié.", "Jue.", "Vie.", "Sáb."]
 };
 
 LocaleConfig.defaultLocale = "es";
 
-
-// ---------------------------------------------------------------
-// DATOS DE EJEMPLO (en memoria) — mismas plantas que en Jardín,
-// con "eventos" (días marcados en el calendario) y "tareas"
-// (checklist) propios de cada planta.
-// ---------------------------------------------------------------
-
-const plantasIniciales = [
+// Plantas y cuidados simulados
+const plantas = [
     {
         id: "1",
         nombre: "Orquídea Cattleya",
         imagen: require("../../assets/Cattleya.jpg"),
-        eventos: {
-            6: {
-                tipo: "riego",
-                tarea: "Regar con agua a temperatura ambiente, empapando bien el sustrato."
-            },
-            15: {
-                tipo: "cuidado",
-                tarea: "Quitar hojas secas y limpiar residuos."
-            },
-            20: {
-                tipo: "riego",
-                tarea: "Regar y aprovechar para aplicar fertilizante diluido."
-            },
+        cuidados: {
+            6: { tipo: "riego", tarea: "Regar la planta con cuidado." },
+            15: { tipo: "cuidado", tarea: "Limpiar las hojas y retirar las secas." },
+            20: { tipo: "riego", tarea: "Regar y aplicar fertilizante diluido." },
         },
-        tareas: [
-            {
-                id: "1-t1",
-                texto: "HOY - Limpiar hojas",
-                hecha: false
-            },
-        ],
     },
-
     {
         id: "2",
         nombre: "Narciso",
         imagen: require("../../assets/narciso.jpg"),
-        eventos: {
-            10: {
-                tipo: "riego",
-                tarea: "Regar moderadamente, evitando encharcar el bulbo."
-            },
+        cuidados: {
+            10: { tipo: "riego", tarea: "Regar moderadamente, sin encharcar." },
         },
-        tareas: [
-            {
-                id: "2-t1",
-                texto: "HOY - Regar planta",
-                hecha: false
-            },
-        ],
     },
-
     {
         id: "3",
         nombre: "Albahaca",
         imagen: require("../../assets/albahaca.jpg"),
-        eventos: {
-            3: {
-                tipo: "cuidado",
-                tarea: "Cortar las flores para que siga produciendo hojas."
-            },
-            23: {
-                tipo: "cuidado",
-                tarea: "Podar las hojas superiores para estimular el crecimiento."
-            },
+        cuidados: {
+            3: { tipo: "cuidado", tarea: "Retirar flores secas." },
+            23: { tipo: "cuidado", tarea: "Podar los brotes superiores." },
         },
-        tareas: [
-            {
-                id: "3-t1",
-                texto: "HOY - Limpiar hojas",
-                hecha: false
-            },
-            {
-                id: "3-t2",
-                texto: "HOY - Podar brotes",
-                hecha: false
-            },
-        ],
     },
-
     {
         id: "4",
-        nombre: "valeriana",
+        nombre: "Valeriana",
         imagen: require("../../assets/valeriana.jpg"),
-        eventos: {
-            12: {
-                tipo: "riego",
-                tarea: "Regar manteniendo el sustrato húmedo, sin encharcar."
-            },
+        cuidados: {
+            12: { tipo: "riego", tarea: "Regar sin encharcar el sustrato." },
         },
-        tareas: [
-            {
-                id: "4-t1",
-                texto: "HOY - Regar planta",
-                hecha: false
-            },
-        ],
     },
-
     {
         id: "5",
         nombre: "Pronto alivio",
         imagen: require("../../assets/prontoalivio.jpg"),
-        eventos: {
-            8: {
-                tipo: "riego",
-                tarea: "Regar en la base evitando mojar las hojas."
-            },
+        cuidados: {
+            8: { tipo: "riego", tarea: "Regar la base de la planta." },
         },
-        tareas: [
-            {
-                id: "5-t1",
-                texto: "HOY - Regar planta",
-                hecha: false
-            },
-        ],
     },
-
     {
         id: "6",
         nombre: "Sábila",
         imagen: require("../../assets/sabila.jpg"),
-        eventos: {
-            18: {
-                tipo: "cuidado",
-                tarea: "Retirar hojas secas de la base."
-            },
+        cuidados: {
+            18: { tipo: "cuidado", tarea: "Retirar las hojas secas." },
         },
-        tareas: [
-            {
-                id: "6-t1",
-                texto: "HOY - Limpiar hojas secas",
-                hecha: false
-            },
-        ],
     },
-
     {
         id: "7",
         nombre: "Tomate de árbol",
         imagen: require("../../assets/tomatearbol.webp"),
-        eventos: {
-            5: {
-                tipo: "riego",
-                tarea: "Regar abundantemente, es una etapa de crecimiento activo."
-            },
-            25: {
-                tipo: "cuidado",
-                tarea: "Revisar tutores y guiar las ramas nuevas."
-            },
+        cuidados: {
+            5: { tipo: "riego", tarea: "Regar durante su crecimiento." },
+            25: { tipo: "cuidado", tarea: "Revisar las ramas y los tutores." },
         },
-        tareas: [
-            {
-                id: "7-t1",
-                texto: "HOY - Regar planta",
-                hecha: false
-            },
-            {
-                id: "7-t2",
-                texto: "HOY - Revisar tutores",
-                hecha: false
-            },
-        ],
     },
-
     {
         id: "8",
         nombre: "Tomate",
         imagen: require("../../assets/tomate.webp"),
-        eventos: {
-            14: {
-                tipo: "riego",
-                tarea: "Regar en la base, temprano en la mañana."
-            },
+        cuidados: {
+            14: { tipo: "riego", tarea: "Regar la base de la planta." },
         },
-        tareas: [
-            {
-                id: "8-t1",
-                texto: "HOY - Regar planta",
-                hecha: false
-            },
-        ],
     },
 ];
 
-
-// ===============================================================
-// COMPONENTE
-// ===============================================================
-
 export default function CalendarioPlantas() {
+    const hoy = new Date();
+    const fechaHoy = [
+        hoy.getFullYear(),
+        String(hoy.getMonth() + 1).padStart(2, "0"),
+        String(hoy.getDate()).padStart(2, "0"),
+    ].join("-");
 
-    const [plantaSeleccionada, setPlantaSeleccionada] = useState(
-        plantasIniciales[0].id
-    );
+    const [plantaSeleccionada, setPlantaSeleccionada] = useState(plantas[0]);
+    const [fechaSeleccionada, setFechaSeleccionada] = useState(fechaHoy);
+    const [tareasCompletadas, setTareasCompletadas] = useState([]);
 
-    // Ya no necesitamos mes/anio ni generarCuadricula.
-    // react-native-calendars se encarga del calendario.
+    // Obtener el cuidado del día seleccionado
+    const dia = Number(fechaSeleccionada.split("-")[2]);
+    const cuidado = plantaSeleccionada.cuidados[dia];
 
-    const [tareasPorPlanta, setTareasPorPlanta] = useState(
-        Object.fromEntries(
-            plantasIniciales.map((p) => [p.id, p.tareas])
-        )
-    );
+    // Marcar en el calendario los días con cuidados de ejemplo
+    const fechasMarcadas = {};
 
-    // Fecha seleccionada por la librería
-    const [fechaSeleccionada, setFechaSeleccionada] = useState(
-        "2026-01-15"
-    );
+    Object.keys(plantaSeleccionada.cuidados).forEach((diaCuidado) => {
+        const fecha = `${fechaSeleccionada.substring(0, 7)}-${String(diaCuidado).padStart(2, "0")}`;
 
-    // Modal de "tarea del día"
-    const [diaSeleccionado, setDiaSeleccionado] = useState(null);
-
-    // Modal de confirmación
-    const [confirmacionVisible, setConfirmacionVisible] =
-        useState(false);
-
-
-    const planta = useMemo(
-        () =>
-            plantasIniciales.find(
-                (p) => p.id === plantaSeleccionada
-            ) || plantasIniciales[0],
-        [plantaSeleccionada]
-    );
-
-
-    // ===========================================================
-    // OBTENER EL DÍA DESDE UNA FECHA
-    // ===========================================================
-
-    const obtenerDia = (fecha) => {
-        return Number(fecha.split("-")[2]);
-    };
-
-
-    // ===========================================================
-    // TAREAS DE LA PLANTA
-    // ===========================================================
-
-    const tareasDeLaPlanta = tareasPorPlanta[planta.id] || [];
-
-
-    // ===========================================================
-    // CAMBIAR UNA TAREA
-    // ===========================================================
-
-    const alternarTarea = (id) => {
-
-        setTareasPorPlanta((prev) => ({
-            ...prev,
-
-            [planta.id]: prev[planta.id].map((t) =>
-                t.id === id
-                    ? { ...t, hecha: !t.hecha }
-                    : t
-            ),
-        }));
-    };
-
-
-    // ===========================================================
-    // TOCAR UNA FECHA DEL CALENDARIO
-    // ===========================================================
-
-    const tocarDia = (fecha) => {
-
-        const dia = obtenerDia(fecha);
-
-        const evento = planta.eventos[dia];
-
-        // Solo abre el modal si existe un cuidado
-        if (!evento) {
-            return;
-        }
-
-        setFechaSeleccionada(fecha);
-
-        setDiaSeleccionado({
-            dia,
-            ...evento,
-        });
-    };
-
-
-    // ===========================================================
-    // CERRAR MODAL
-    // ===========================================================
-
-    const cerrarDiaModal = () =>
-        setDiaSeleccionado(null);
-
-
-    // ===========================================================
-    // ENVIAR TAREAS
-    // ===========================================================
-
-    const enviarTareas = () => {
-
-        setTareasPorPlanta((prev) => ({
-            ...prev,
-
-            [planta.id]: prev[planta.id].map(
-                (t) => ({
-                    ...t,
-                    hecha: true
-                })
-            ),
-        }));
-
-        setConfirmacionVisible(true);
-    };
-
-
-    const cerrarConfirmacion = () =>
-        setConfirmacionVisible(false);
-
-
-    // ===========================================================
-    // FECHA ACTUAL DE EJEMPLO
-    // ===========================================================
-
-    const hoy = "2026-01-15";
-
-
-    // ===========================================================
-    // FECHAS QUE TIENEN CUIDADOS
-    // ===========================================================
-
-    const markedDates = {};
-
-    Object.keys(planta.eventos).forEach((dia) => {
-
-        const fecha =
-            `2026-01-${String(dia).padStart(2, "0")}`;
-
-        markedDates[fecha] = {
+        fechasMarcadas[fecha] = {
             marked: true,
+            dotColor: "#5F8A58",
         };
     });
 
+    // Resaltar la fecha seleccionada
+    fechasMarcadas[fechaSeleccionada] = {
+        ...fechasMarcadas[fechaSeleccionada],
+        selected: true,
+        selectedColor: "#6F9562",
+        selectedTextColor: "#FFFFFF",
+    };
 
-    // ===========================================================
-    // CALENDARIO
-    // ===========================================================
+    const tareaId = `${plantaSeleccionada.id}-${fechaSeleccionada}`;
+    const tareaHecha = tareasCompletadas.includes(tareaId);
+
+    const completarTarea = () => {
+        if (!cuidado) return;
+
+        if (!tareaHecha) {
+            setTareasCompletadas([...tareasCompletadas, tareaId]);
+        }
+
+        Alert.alert(
+            "Cuidado registrado",
+            "La tarea se ha realizado."
+        );
+    };
 
     return (
         <SafeAreaView style={styles.container}>
-
             <ScrollView showsVerticalScrollIndicator={false}>
-
-                {/* HEADER */}
-
+                {/* Encabezado */}
                 <View style={styles.header}>
-
                     <View>
-
-                        <Text style={styles.title}>
-                            Calendario
+                        <Text style={styles.title}>Calendario</Text>
+                        <Text style={styles.subtitle}>
+                            {plantaSeleccionada.nombre}
                         </Text>
-
-                        <View style={styles.plantsInfo}>
-
-                            <Ionicons
-                                name="water"
-                                size={14}
-                                color="#5F8A58"
-                            />
-
-                            <Text style={styles.plantsText}>
-                                {planta.nombre}
-                            </Text>
-
-                        </View>
-
                     </View>
 
-
-                    <TouchableOpacity style={styles.notification}>
-
+                    <View style={styles.notification}>
                         <Ionicons
                             name="notifications-outline"
                             size={25}
                             color="#48643F"
                         />
-
-                        <View style={styles.notificationDot} />
-
-                    </TouchableOpacity>
-
-                </View>
-
-
-                {/* MIS PLANTAS — todas las plantas del jardín */}
-
-                <View style={styles.plantsTitleRow}>
-
-                    <Text style={styles.sectionTitle}>
-                        Mis Plantas
-                    </Text>
-
-                    <View style={styles.scrollHint}>
-
-                        <Text style={styles.scrollHintText}>
-                            Desliza
-                        </Text>
-
-                        <Ionicons
-                            name="chevron-forward"
-                            size={16}
-                            color="#5F8A58"
-                        />
-
                     </View>
-
                 </View>
 
+                <View style={styles.encabezadoPlantas}>
+                    <Text style={styles.sectionTitle}>Mis plantas</Text>
+
+                    <View style={styles.mensajeDesliza}>
+                        <Text style={styles.textoDesliza}>Desliza</Text>
+                        <Ionicons name="arrow-forward" size={16} color="#6F9460" />
+                    </View>
+                </View>
 
                 <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.plantsRow}
                 >
-
-                    {plantasIniciales.map((p) => {
-
-                        const activa =
-                            p.id === plantaSeleccionada;
-
-                        return (
-
-                            <TouchableOpacity
-                                key={p.id}
-                                style={styles.plantCard}
-                                onPress={() =>
-                                    setPlantaSeleccionada(p.id)
-                                }
-                                activeOpacity={0.8}
-                            >
-
-                                <Image
-                                    source={p.imagen}
-                                    style={[
-                                        styles.plantImage,
-                                        activa &&
-                                            styles.plantImageActiva,
-                                    ]}
-                                    resizeMode="cover"
-                                />
-
-                                <Text
-                                    style={styles.plantName}
-                                    numberOfLines={1}
-                                >
-                                    {p.nombre}
-                                </Text>
-
-                            </TouchableOpacity>
-
-                        );
-
-                    })}
-
+                    {plantas.map((planta) => (
+                        <TouchableOpacity
+                            key={planta.id}
+                            style={styles.plantCard}
+                            onPress={() => setPlantaSeleccionada(planta)}
+                        >
+                            <Image
+                                source={planta.imagen}
+                                style={[
+                                    styles.plantImage,
+                                    plantaSeleccionada.id === planta.id &&
+                                    styles.plantImageActiva,
+                                ]}
+                            />
+                            <Text style={styles.plantName} numberOfLines={1}>
+                                {planta.nombre}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
                 </ScrollView>
 
-
-                {/* =================================================
-                    CALENDARIO
-                    AHORA LO MANEJA react-native-calendars
-                ================================================= */}
-
+                {/* Calendario */}
                 <View style={styles.calendarCard}>
-
                     <Calendar
-
-                        current={fechaSeleccionada}
-
+                        current={fechaHoy}
                         onDayPress={(day) =>
-                            tocarDia(day.dateString)
+                            setFechaSeleccionada(day.dateString)
                         }
-
                         firstDay={1}
-
-                        hideExtraDays={true}
-
-                        enableSwipeMonths={true}
-
-                        markedDates={{
-                            ...markedDates,
-
-                            [fechaSeleccionada]: {
-                                ...markedDates[
-                                    fechaSeleccionada
-                                ],
-                                selected: true,
-                            },
-                        }}
-
-                        monthFormat="MMMM yyyy"
-
+                        enableSwipeMonths
+                        markedDates={fechasMarcadas}
                         theme={{
-                            backgroundColor: "#F8F7F3",
-                            calendarBackground: "#F8F7F3",
-
-                            textSectionTitleColor:
-                                "#A9B8A3",
-
-                            selectedDayBackgroundColor:
-                                "#EDF2E9",
-
-                            selectedDayTextColor:
-                                "#29432A",
-
-                            todayTextColor:
-                                "#29432A",
-
-                            dayTextColor:
-                                "#253A27",
-
-                            textDisabledColor:
-                                "#D5DDD1",
-
-                            arrowColor:
-                                "#29432A",
-
-                            monthTextColor:
-                                "#29432A",
-
+                            calendarBackground: "#FFFFFF",
+                            backgroundColor: "#FFFFFF",
+                            textSectionTitleColor: "#7A8B74",
+                            dayTextColor: "#29432A",
+                            todayTextColor: "#5F8A58",
+                            monthTextColor: "#29432A",
+                            arrowColor: "#29432A",
+                            textDisabledColor: "#D5DDD1",
+                            textMonthFontWeight: "700",
                             textMonthFontSize: 17,
-
-                            textMonthFontWeight: "500",
-
-                            textDayHeaderFontSize: 12,
-
-                            textDayFontSize: 15,
                         }}
-
-                        renderArrow={(direction) => (
-
-                            <Ionicons
-                                name={
-                                    direction === "left"
-                                        ? "chevron-back"
-                                        : "chevron-forward"
-                                }
-                                size={20}
-                                color="#29432A"
-                            />
-
-                        )}
-
-                        dayComponent={( {
-                            date,
-                            state,
-                        }) => {
-
-                            const dia =
-                                Number(date.day);
-
-                            const evento =
-                                planta.eventos[dia];
-
-                            const esHoy =
-                                date.dateString === hoy;
-
-                            return (
-
-                                <TouchableOpacity
-                                    style={[
-                                        styles.dayCell,
-
-                                        esHoy &&
-                                            styles.dayCellHoy,
-                                    ]}
-                                    onPress={() =>
-                                        evento &&
-                                        tocarDia(
-                                            date.dateString
-                                        )
-                                    }
-                                    disabled={!evento}
-                                    activeOpacity={
-                                        evento ? 0.6 : 1
-                                    }
-                                >
-
-                                    {date ? (
-                                        <>
-
-                                            <Text
-                                                style={[
-                                                    styles.dayNumber,
-
-                                                    state ===
-                                                        "disabled" &&
-                                                        {
-                                                            color:
-                                                                "#D5DDD1",
-                                                        },
-                                                ]}
-                                            >
-                                                {date.day}
-                                            </Text>
-
-
-                                            {evento?.tipo ===
-                                                "riego" && (
-
-                                                <Ionicons
-                                                    name="water"
-                                                    size={15}
-                                                    color="#2C6FA6"
-                                                />
-
-                                            )}
-
-
-                                            {evento?.tipo ===
-                                                "cuidado" && (
-
-                                                <Ionicons
-                                                    name="leaf"
-                                                    size={15}
-                                                    color="#5F8A58"
-                                                />
-
-                                            )}
-
-                                        </>
-                                    ) : null}
-
-                                </TouchableOpacity>
-
-                            );
-
-                        }}
-
                     />
-
                 </View>
 
-
-                {/* TAREAS DIARIAS — solo de la planta seleccionada */}
-
+                {/* Cuidado del día */}
                 <View style={styles.tasksSection}>
+                    <Text style={styles.sectionTitle}>Cuidado del día</Text>
 
-                    <View style={styles.tasksHeader}>
-
-                        <Ionicons
-                            name="checkmark-circle-outline"
-                            size={18}
-                            color="#29432A"
-                        />
-
-                        <Text style={styles.sectionTitle}>
-                            Tareas Diarias
-                        </Text>
-
-                    </View>
-
-
-                    {/* =================================================
-                        AQUÍ SE MUESTRAN LOS CUIDADOS DEL DÍA
-                    ================================================= */}
-
-                    {(() => {
-
-                        const dia =
-                            obtenerDia(fechaSeleccionada);
-
-                        const evento =
-                            planta.eventos[dia];
-
-                        if (!evento) {
-
-                            return (
-
-                                <Text
-                                    style={styles.tasksEmpty}
-                                >
-                                    No hay cuidados programados
-                                    para este día.
-                                </Text>
-
-                            );
-                        }
-
-
-                        const tareaDelDia =
-                            tareasDeLaPlanta.find(
-                                (t) =>
-                                    t.texto
-                                        .toLowerCase()
-                                        .includes(
-                                            evento.tipo ===
-                                                "riego"
-                                                ? "regar"
-                                                : "limpiar"
-                                        )
-                            );
-
-
-                        if (tareaDelDia) {
-
-                            return (
-
-                                <TouchableOpacity
-                                    key={tareaDelDia.id}
-                                    style={styles.taskRow}
-                                    onPress={() =>
-                                        alternarTarea(
-                                            tareaDelDia.id
-                                        )
-                                    }
-                                    activeOpacity={0.8}
-                                >
-
-                                    <View
-                                        style={styles.taskInfo}
-                                    >
-
-                                        <Text
-                                            style={
-                                                styles.taskWhen
-                                            }
-                                        >
-                                            {tareaDelDia.texto.split(
-                                                " - "
-                                            )[0]}
-                                        </Text>
-
-                                        <Text
-                                            style={[
-                                                styles.taskLabel,
-                                                tareaDelDia.hecha &&
-                                                    styles.taskLabelHecha,
-                                            ]}
-                                        >
-                                            {evento.tarea}
-                                        </Text>
-
-                                    </View>
-
-
-                                    <Ionicons
-                                        name={
-                                            tareaDelDia.hecha
-                                                ? "checkbox"
-                                                : "square-outline"
-                                        }
-                                        size={22}
-                                        color={
-                                            tareaDelDia.hecha
-                                                ? "#5F8A58"
-                                                : "#A9B8A3"
-                                        }
-                                    />
-
-                                </TouchableOpacity>
-
-                            );
-
-                        }
-
-
-                        // Si el cuidado no coincide con una
-                        // tarea existente, mostramos igualmente
-                        // el cuidado del día.
-
-                        return (
-
-                            <TouchableOpacity
-                                style={styles.taskRow}
-                                onPress={() => {
-
-                                    setDiaSeleccionado({
-                                        dia,
-                                        ...evento,
-                                    });
-
-                                }}
-                                activeOpacity={0.8}
-                            >
-
-                                <View
-                                    style={styles.taskInfo}
-                                >
-
-                                    <Text
-                                        style={styles.taskWhen}
-                                    >
-                                        CUIDADO DEL DÍA
-                                    </Text>
-
-                                    <Text
-                                        style={styles.taskLabel}
-                                    >
-                                        {evento.tarea}
-                                    </Text>
-
-                                </View>
-
-
+                    <View style={styles.taskCard}>
+                        {cuidado ? (
+                            <>
                                 <Ionicons
                                     name={
-                                        evento.tipo ===
-                                            "riego"
+                                        cuidado.tipo === "riego"
                                             ? "water"
                                             : "leaf"
                                     }
-                                    size={22}
+                                    size={28}
                                     color={
-                                        evento.tipo ===
-                                            "riego"
+                                        cuidado.tipo === "riego"
                                             ? "#2C6FA6"
                                             : "#5F8A58"
                                     }
                                 />
 
-                            </TouchableOpacity>
+                                <View style={styles.taskInfo}>
+                                    <Text style={styles.taskType}>
+                                        {cuidado.tipo === "riego"
+                                            ? "Riego"
+                                            : "Mantenimiento"}
+                                    </Text>
 
-                        );
+                                    <Text style={styles.taskText}>
+                                        {cuidado.tarea}
+                                    </Text>
 
-                    })()}
+                                    {tareaHecha && (
+                                        <Text style={styles.completedText}>
+                                            Tarea completada
+                                        </Text>
+                                    )}
+                                </View>
 
-
-                    {/* BOTÓN: ENVIAR TAREAS DEL DÍA */}
-
-                    <TouchableOpacity
-                        style={styles.sendButton}
-                        onPress={enviarTareas}
-                        activeOpacity={0.85}
-                    >
-
-                        <Text
-                            style={styles.sendButtonText}
-                        >
-                            Enviar
-                        </Text>
-
-                    </TouchableOpacity>
-
+                                <TouchableOpacity onPress={completarTarea}>
+                                    <Ionicons
+                                        name={
+                                            tareaHecha
+                                                ? "checkmark-circle"
+                                                : "checkmark-circle-outline"
+                                        }
+                                        size={27}
+                                        color="#5F8A58"
+                                    />
+                                </TouchableOpacity>
+                            </>
+                        ) : (
+                            <Text style={styles.emptyText}>
+                                No hay cuidados programados para este día.
+                            </Text>
+                        )}
+                    </View>
                 </View>
-
             </ScrollView>
-
-
-            {/* MODAL: TAREA DEL DÍA */}
-
-            <Modal
-                visible={!!diaSeleccionado}
-                transparent
-                animationType="fade"
-                onRequestClose={cerrarDiaModal}
-            >
-
-                <View style={styles.modalOverlay}>
-
-                    <View style={styles.modalCard}>
-
-                        <View
-                            style={[
-                                styles.modalIconWrapper,
-
-                                diaSeleccionado?.tipo ===
-                                    "riego"
-                                    ? styles.modalIconRiego
-                                    : styles.modalIconCuidado,
-                            ]}
-                        >
-
-                            <Ionicons
-                                name={
-                                    diaSeleccionado?.tipo ===
-                                        "riego"
-                                        ? "water"
-                                        : "leaf"
-                                }
-                                size={26}
-                                color={
-                                    diaSeleccionado?.tipo ===
-                                        "riego"
-                                        ? "#2C6FA6"
-                                        : "#5F8A58"
-                                }
-                            />
-
-                        </View>
-
-
-                        <Text style={styles.modalTitle}>
-
-                            {diaSeleccionado
-                                ? `${diaSeleccionado.dia} de ${[
-                                      "enero",
-                                      "febrero",
-                                      "marzo",
-                                      "abril",
-                                      "mayo",
-                                      "junio",
-                                      "julio",
-                                      "agosto",
-                                      "septiembre",
-                                      "octubre",
-                                      "noviembre",
-                                      "diciembre",
-                                  ][
-                                      Number(
-                                          fechaSeleccionada.split(
-                                              "-"
-                                          )[1]
-                                      ) - 1
-                                  ]}`
-                                : ""}
-
-                        </Text>
-
-
-                        <Text style={styles.modalSubtitle}>
-                            {planta.nombre}
-                        </Text>
-
-
-                        <Text style={styles.modalMessage}>
-                            {diaSeleccionado?.tarea}
-                        </Text>
-
-
-                        <TouchableOpacity
-                            style={styles.modalCloseButton}
-                            onPress={cerrarDiaModal}
-                        >
-
-                            <Text
-                                style={styles.modalCloseText}
-                            >
-                                Entendido
-                            </Text>
-
-                        </TouchableOpacity>
-
-                    </View>
-
-                </View>
-
-            </Modal>
-
-
-            {/* MODAL: CONFIRMACIÓN DE TAREAS ENVIADAS */}
-
-            <Modal
-                visible={confirmacionVisible}
-                transparent
-                animationType="fade"
-                onRequestClose={
-                    cerrarConfirmacion
-                }
-            >
-
-                <View style={styles.modalOverlay}>
-
-                    <View style={styles.modalCard}>
-
-                        <View
-                            style={[
-                                styles.modalIconWrapper,
-                                styles.modalIconExito,
-                            ]}
-                        >
-
-                            <Ionicons
-                                name="checkmark-circle"
-                                size={30}
-                                color="#5F8A58"
-                            />
-
-                        </View>
-
-
-                        <Text style={styles.modalTitle}>
-                            ¡Tareas completadas!
-                        </Text>
-
-
-                        <Text style={styles.modalMessage}>
-                            Se registraron las tareas del día para{" "}
-                            {planta.nombre}.
-                        </Text>
-
-
-                        <TouchableOpacity
-                            style={styles.modalCloseButton}
-                            onPress={
-                                cerrarConfirmacion
-                            }
-                        >
-
-                            <Text
-                                style={styles.modalCloseText}
-                            >
-                                Listo
-                            </Text>
-
-                        </TouchableOpacity>
-
-                    </View>
-
-                </View>
-
-            </Modal>
-
         </SafeAreaView>
     );
 }
 
-
 const styles = StyleSheet.create({
-
     container: {
         flex: 1,
         backgroundColor: "#F8F7F3",
         paddingHorizontal: 16,
     },
-
     header: {
         flexDirection: "row",
-        alignItems: "center",
         justifyContent: "space-between",
+        alignItems: "center",
         paddingTop: 10,
-        paddingBottom: 14,
+        paddingBottom: 18,
         borderBottomWidth: 1,
         borderBottomColor: "#E6EDE3",
     },
@@ -1119,307 +320,113 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         color: "#29432A",
     },
-
-    plantsInfo: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 5,
-        marginTop: 2,
-    },
-
-    plantsText: {
-        fontSize: 14,
+    subtitle: {
         color: "#5F8A58",
+        marginTop: 4,
         fontWeight: "600",
     },
+    encabezadoPlantas: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
 
+    mensajeDesliza: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#EAF1E5',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+        borderRadius: 20,
+        gap: 6,
+    },
+
+    textoDesliza: {
+        fontSize: 12,
+        color: '#6F9460',
+        fontWeight: '500',
+    },
     notification: {
         width: 46,
         height: 46,
         borderRadius: 23,
         backgroundColor: "#FFFFFF",
-        justifyContent: "center",
         alignItems: "center",
+        justifyContent: "center",
         elevation: 3,
     },
-
-    notificationDot: {
-        position: "absolute",
-        top: 9,
-        right: 9,
-        width: 8,
-        height: 8,
-        borderRadius: 4,
-        backgroundColor: "#79B851",
-        borderWidth: 2,
-        borderColor: "#FFFFFF",
-    },
-
     sectionTitle: {
         fontSize: 18,
         fontWeight: "700",
         color: "#29432A",
-        marginTop: 18,
+        marginTop: 20,
         marginBottom: 12,
     },
-
-    // ===========================================================
-    // INDICADOR PARA DESLIZAR EN MIS PLANTAS
-    // ===========================================================
-
-    plantsTitleRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-    },
-
-    scrollHint: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginTop: 18,
-        marginBottom: 12,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 10,
-        backgroundColor: "#EDF2E9",
-    },
-
-    scrollHintText: {
-        fontSize: 12,
-        fontWeight: "600",
-        color: "#5F8A58",
-        marginRight: 2,
-    },
-
-    plantsRow: {
-        flexDirection: "row",
-        gap: 12,
-        paddingBottom: 4,
-    },
-
     plantCard: {
-        width: 78,
+        width: 82,
         alignItems: "center",
+        marginRight: 10,
     },
-
     plantImage: {
-        width: 78,
-        height: 78,
+        width: 76,
+        height: 76,
         borderRadius: 14,
-        backgroundColor: "#EDF2E9",
         borderWidth: 2,
         borderColor: "transparent",
     },
-
     plantImageActiva: {
         borderColor: "#5F8A58",
     },
-
     plantName: {
-        marginTop: 6,
-        fontSize: 12,
+        fontSize: 11,
+        color: "#253A27",
         fontWeight: "600",
-        color: "#253A27",
         textAlign: "center",
+        marginTop: 6,
     },
-
-
-    // ===========================================================
-    // CALENDARIO
-    // ===========================================================
-
     calendarCard: {
+        backgroundColor: "#FFFFFF",
         borderRadius: 18,
-        padding: 0,
-        marginTop: 18,
-        elevation: 2,
         overflow: "hidden",
+        marginTop: 20,
+        elevation: 2,
     },
-
-
-    // ===========================================================
-    // DÍA PERSONALIZADO DEL CALENDARIO
-    // ===========================================================
-
-    dayCell: {
-        width: 40,
-        height: 43,
-        alignItems: "center",
-        justifyContent: "flex-start",
-        borderRadius: 8,
-        paddingTop: 2,
-    },
-
-    dayCellHoy: {
-        backgroundColor: "#EDF2E9",
-    },
-
-    dayNumber: {
-        fontSize: 15,
-        color: "#253A27",
-        marginBottom: 2,
-    },
-
-
-    // ===========================================================
-    // TAREAS
-    // ===========================================================
-
     tasksSection: {
-        marginTop: 22,
         marginBottom: 30,
     },
-
-    tasksHeader: {
+    taskCard: {
         flexDirection: "row",
         alignItems: "center",
-        gap: 8,
-    },
-
-    tasksEmpty: {
-        fontSize: 13,
-        color: "#7A8B74",
-        fontStyle: "italic",
-    },
-
-    taskRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderRadius: 14,
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        marginBottom: 0,
-        elevation: 1,
-    },
-
-    taskInfo: {
-        flex: 1,
-        paddingRight: 12,
-    },
-
-    taskWhen: {
-        fontSize: 12,
-        fontWeight: "600",
-        color: "#5F8A58",
-        marginBottom: 3,
-    },
-
-    taskLabel: {
-        fontSize: 17,
-        fontWeight: "400",
-        color: "#253A27",
-        marginTop: 0,
-    },
-
-    taskLabelHecha: {
-        textDecorationLine: "line-through",
-        color: "#A9B8A3",
-    },
-
-    sendButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        backgroundColor: "#9dcd88",
-        borderRadius: 14,
-        paddingVertical: 14,
-        marginLeft: 50,
-        width: 260,
-        marginTop: 6,
+        backgroundColor: "#FFFFFF",
+        borderRadius: 16,
+        padding: 16,
+        gap: 12,
         elevation: 2,
     },
-
-    sendButtonText: {
-        color: "#090909",
-        fontSize: 18,
-        fontWeight: "500",
-        fontStyle: "italic",
-    },
-
-
-    // ===========================================================
-    // MODALES
-    // ===========================================================
-
-    modalOverlay: {
+    taskInfo: {
         flex: 1,
-        backgroundColor: "rgba(20, 30, 20, 0.5)",
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 24,
     },
-
-    modalCard: {
-        width: "100%",
-        maxWidth: 340,
-        backgroundColor: "#FFFFFF",
-        borderRadius: 20,
-        paddingVertical: 26,
-        paddingHorizontal: 22,
-        alignItems: "center",
-        elevation: 8,
-    },
-
-    modalIconWrapper: {
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        justifyContent: "center",
-        alignItems: "center",
-        marginBottom: 12,
-    },
-
-    modalIconRiego: {
-        backgroundColor: "#E4EEF7",
-    },
-
-    modalIconCuidado: {
-        backgroundColor: "#E7F3E4",
-    },
-
-    modalIconExito: {
-        backgroundColor: "#E7F3E4",
-    },
-
-    modalTitle: {
-        fontSize: 18,
+    taskType: {
+        fontSize: 12,
         fontWeight: "700",
-        color: "#253A27",
-        textAlign: "center",
-        textTransform: "capitalize",
-    },
-
-    modalSubtitle: {
-        fontSize: 13,
-        fontWeight: "600",
         color: "#5F8A58",
-        marginTop: 2,
-        marginBottom: 10,
+        marginBottom: 4,
     },
-
-    modalMessage: {
+    taskText: {
         fontSize: 14,
-        color: "#6A7F75",
-        textAlign: "center",
+        color: "#29432A",
         lineHeight: 20,
-        marginTop: 4,
     },
-
-    modalCloseButton: {
-        marginTop: 20,
-        width: "100%",
-        backgroundColor: "#7aa17b",
-        borderRadius: 12,
-        paddingVertical: 13,
-        alignItems: "center",
+    completedText: {
+        fontSize: 12,
+        color: "#5F8A58",
+        marginTop: 5,
+        fontWeight: "600",
     },
-
-    modalCloseText: {
-        color: "#FFFFFF",
-        fontWeight: "700",
+    emptyText: {
         fontSize: 14,
+        color: "#7A8B74",
+        lineHeight: 20,
     },
-
 });
